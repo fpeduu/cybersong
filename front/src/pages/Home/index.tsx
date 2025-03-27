@@ -9,9 +9,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 function Home() {
+  const navigate = useNavigate();
+
   const formSchema = z.object({
     songName: z
       .string({
@@ -42,7 +45,10 @@ function Home() {
       <div className="flex max-w-2xl w-full items-center z-10">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => console.log(data))}
+            onSubmit={form.handleSubmit((data) => {
+              console.log(data);
+              navigate("/song-list");
+            })}
             className="w-full flex flex-col gap-4 items-center"
           >
             <FormField
