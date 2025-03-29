@@ -4,3 +4,12 @@ uvicorn[standard]
 moviepy
 openai
 python-dotenv
+requests
+IPython
+librosa
+soundfile
+numpy
+yt-dlp
+urllib3  # Necessário se não estiver incluído com outros pacotes
+beautifulsoup4
+
