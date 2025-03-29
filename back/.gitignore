@@ -1,0 +1,27 @@
+# Arquivos Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Arquivos de logs
+*.log
+
+# Arquivos de pacotes
+*.egg-info/
+dist/
+build/
+
+# Configurações específicas do IDE
+.vscode/
+.idea/
+
+# Arquivos do pytest e cache de testes
+.pytest_cache/
+.cache/
