@@ -1,6 +1,8 @@
 import httpx
 from fastapi import HTTPException
 import requests
+import librosa
+import numpy as np
 
 def pipeline(title, artist, album, preview_url):
     print(f"\n🎵 Música Escolhida:")
