@@ -25,3 +25,5 @@ build/
 # Arquivos do pytest e cache de testes
 .pytest_cache/
 .cache/
+
+temp_preview.mp3
