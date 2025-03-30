@@ -1,63 +1,57 @@
 import { Button } from "@/components/ui/button";
+import { sendSelectedMusic, Song } from "@/services/musicService";
 import { useState } from "react";
-
-type Song = {
-  id: number;
-  title: string;
-  artist: string;
-  duration: string;
-  preview: string; // Link para um trecho da música
-};
+import { useLocation, useNavigate } from "react-router-dom";
 
 function SongList() {
+  const location = useLocation();
+  const { songs } = location.state || { songs: [] };
   //   const { data, loading, error } = useQuery(GET_SONGS);
 
   //   if (loading) return <p>Loading...</p>;
   //   if (error) return <p>Error :(</p>;
-
-  const songs: Song[] = [
-    {
-      id: 1,
-      title: "Blinding Lights",
-      artist: "The Weeknd",
-      duration: "3:20",
-      preview: "https://p.scdn.co/mp3-preview/4a07c30c", // URL fictícia
-    },
-    {
-      id: 2,
-      title: "Shape of You",
-      artist: "Ed Sheeran",
-      duration: "3:53",
-      preview: "https://p.scdn.co/mp3-preview/8f8e3cda", // URL fictícia
-    },
-    {
-      id: 3,
-      title: "Levitating",
-      artist: "Dua Lipa",
-      duration: "3:40",
-      preview: "https://p.scdn.co/mp3-preview/d0cfe54b", // URL fictícia
-    },
-  ];
+  const navigate = useNavigate();
 
   const [currentSong, setCurrentSong] = useState<number | null>(null);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null); // Estado para a música selecionada
+
+  const handleSelectSong = (song: Song) => {
+    setSelectedSong(song); // Atualiza a música selecionada
+  };
 
   const playPreview = (songId: number, previewUrl: string) => {
+    // Se já houver um áudio tocando, pausa e reinicia a música
     if (audio) {
       audio.pause();
       setCurrentSong(null);
     }
 
+    // Cria um novo elemento de áudio com o preview
     const newAudio = new Audio(previewUrl);
     setAudio(newAudio);
     setCurrentSong(songId);
 
     newAudio.play();
 
+    // Pausa o áudio após 5 segundos
     setTimeout(() => {
       newAudio.pause();
       setCurrentSong(null);
     }, 5000); // Toca por 5 segundos
+  };
+
+  const handleContinue = async () => {
+    if (selectedSong) {
+      try {
+        await sendSelectedMusic(selectedSong);
+        navigate("/video-result", { state: { song: selectedSong } });
+      } catch (error) {
+        console.error("Erro ao enviar música:", error);
+      }
+    } else {
+      alert("Selecione uma música para continuar");
+    }
   };
 
   return (
@@ -67,21 +61,24 @@ function SongList() {
         <div className="w-full max-w-6xl lg:min-w-[780px] p-6  rounded-lg shadow-lg">
           <h2 className="text-lg  mb-4">Músicas Encontradas</h2>
           <ul className="space-y-4">
-            {songs.map((song) => (
+            {songs.map((song: Song) => (
               <li
                 key={song.id}
-                className="flex justify-between w-full items-center mb-0  py-3  border-t divide-solid  "
+                className={`flex justify-between w-full items-center mb-0 py-3 border-t divide-solid cursor-pointer ${
+                  selectedSong?.id === song.id ? "text-[#497289]" : ""
+                }`} // Adiciona destaque na música selecionada
+                onClick={() => handleSelectSong(song)}
               >
                 <div className="flex items-center gap-2">
                   <p className="font-medium">{song.title} </p>
                   <p className="font-medium">|</p>
                   <p className="font-medium">{song.artist}</p>
-                  <p className="font-medium">|</p>
-                  <p className="font-medium">{song.duration}</p>
+                  {/* <p className="font-medium">|</p>
+                  <p className="font-medium">{song.duration}</p> */}
                 </div>
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={() => playPreview(song.id, song.preview)}
+                    onClick={() => playPreview(song.id, song.preview_url)}
                     className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition"
                   >
                     {currentSong === song.id ? "⏸️" : "▶️"}
@@ -90,6 +87,20 @@ function SongList() {
               </li>
             ))}
           </ul>
+          <div className="flex gap-2 justify-between items-center flex-wrap">
+            <Button
+              className="w-full mt-4 max-w-3xs md:max-w-xs items-self-center !bg-[#484848] hover:!border-white"
+              onClick={() => navigate(-1)}
+            >
+              Voltar
+            </Button>
+            <Button
+              className="w-full mt-4 max-w-3xs md:max-w-xs items-self-center !bg-[#497289] hover:!bg-[#3e5c7d] hover:!border-white"
+              onClick={handleContinue}
+            >
+              Continuar
+            </Button>
+          </div>
         </div>
       </div>
     </div>

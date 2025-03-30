@@ -7,6 +7,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { searchMusic, Song } from "@/services/musicService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -45,9 +46,17 @@ function Home() {
       <div className="flex max-w-2xl w-full items-center z-10">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => {
-              console.log(data);
-              navigate("/song-list");
+            onSubmit={form.handleSubmit(async (data) => {
+              try {
+                const songs = await searchMusic(data.artistName, data.songName);
+                if (songs.length === 0) {
+                  alert("Música não encontrada");
+                  return;
+                }
+                navigate("/song-list", { state: { songs: songs as Song[] } });
+              } catch (error) {
+                console.error("Erro ao buscar músicas:", error);
+              }
             })}
             className="w-full flex flex-col gap-4 items-center"
           >

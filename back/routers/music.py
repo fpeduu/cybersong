@@ -4,6 +4,7 @@ from IPython.display import Audio, display, HTML
 from pydantic import BaseModel
 
 from services.deezer import search_deezer, format_duration
+from services.video_gen import pipeline
 
 router = APIRouter()
 
@@ -36,25 +37,19 @@ async def search_music(artist: str, title: str):
     
     return SearchResponse(results=songs)
 
-# @router.get("/search")
-# async def search_music(title: str, artist: str) -> List[str]:
-#     found_songs = await search_deezer(title, artist)
-#     print(found_songs)
-#     if found_songs is None or len(found_songs) == 0:
-#         return {"error": "Nenhum resultado encontrado no Deezer."}
-#     # if found_songs:
-#     #     print(f"🔍 Top 10 resultados para '{title}' de {artist}:\n")
-#     # for i, track in enumerate(found_songs, 1):
-#     #     print(f"🎵 {i}. Música: {track['title']}")
-#     #     print(f"   🎤 Artista: {track['artist']['name']}")
-#     #     print(f"   💿 Álbum: {track['album']['title']}")
-#     #     print(f"   ⏱️ Duração: {format_duration(track['duration'])}")
+@router.post("/select")
+async def select_music(selected_song: Song):
+    response = pipeline(
+        title=selected_song.title,
+        artist=selected_song.artist,
+        album=selected_song.album,
+        preview_url=selected_song.preview_url
+    )
 
-#     #     if track.get('preview'):
-#     #         print("   🔊 Preview:")
-#     #         display(Audio(url=track['preview'], autoplay=False))
-#     #     else:
-#     #         print("   ❌ Preview não disponível")
-#     # else:
-#     #     print("Nenhum resultado encontrado no Deezer.")
-#     return found_songs
+    if "error" not in response:
+        return {"message": "Análise realizada com sucesso!", "data": response}
+    return {"error": "Falha ao analisar a música."}
+
+
+
+
