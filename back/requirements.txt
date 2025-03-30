@@ -13,4 +13,5 @@ yt-dlp
 urllib3  # Necessário se não estiver incluído com outros pacotes
 beautifulsoup4
 pydub
-
+unidecode
+google-api-python-client
