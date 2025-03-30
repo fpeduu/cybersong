@@ -14,6 +14,7 @@ class Song(BaseModel):
     artist: str
     album: str
     preview_url: str
+    duration: int
 
 class SearchResponse(BaseModel):
     results: List[Song]
@@ -31,7 +32,8 @@ async def search_music(artist: str, title: str):
             title=song['title'],
             artist=song['artist']['name'],
             album=song['album']['title'],
-            preview_url=song['preview']
+            preview_url=song['preview'],
+            duration=song['duration']
         ) for song in found_songs
     ]
     
@@ -43,7 +45,8 @@ async def select_music(selected_song: Song):
         title=selected_song.title,
         artist=selected_song.artist,
         album=selected_song.album,
-        preview_url=selected_song.preview_url
+        preview_url=selected_song.preview_url,
+        duration=selected_song.duration
     )
 
     if "error" not in response:

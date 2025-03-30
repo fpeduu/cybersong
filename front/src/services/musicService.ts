@@ -8,6 +8,7 @@ export interface Song {
   artist: string;
   album: string;
   preview_url: string;
+  duration: number;
 }
 
 export const searchMusic = async (
