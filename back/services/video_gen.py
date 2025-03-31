@@ -3,6 +3,7 @@ from fastapi import HTTPException
 import requests
 import librosa
 import numpy as np
+import os
 import yt_dlp
 import re
 from .lyrics import obter_e_salvar_letras
@@ -40,10 +41,17 @@ def pipeline(title, artist, album, preview_url, duration):
         print("\n   🚀 Baixando o arquivo MP3...")
         audio_info = yt_download(title, artist, album, target_duration=duration)
         if audio_info:
+            print("Audio info:", audio_info)
             # Gerar vídeo sincronizado
-            audio_path = audio_info['path']
-            audio = AudioFileClip(audio_path)
-            total_duration = audio.duration
+            try:
+                audio_path = audio_info['path']
+ 
+                audio = AudioFileClip(audio_path)
+                print("Duração do áudio:", audio.duration)
+                total_duration = audio.duration
+
+            except KeyError:
+                print(f"Erro ao carregar o áudio: {audio_path} pode estar corrompido ou inválido.")
 
             # Calcular a duração de cada verso (assumindo 4 imagens por parágrafo)
             verse_duration = total_duration / len(images)
@@ -92,6 +100,9 @@ def audio_analysis(preview_url):
         return None, None, None
     
 
+import re
+import yt_dlp
+
 def yt_download(title, artist, album, target_duration, tolerance=15):
 
     # Pré-processamento da query
@@ -119,14 +130,14 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
         print(f"\n🔍 Buscando: '{query}' (Duração alvo: {target_duration}s ±{tolerance}s)")
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # Primeiro verifica se existe
+            # Buscar vídeos
             info = ydl.extract_info(f"ytsearch5:{query}", download=False)
 
             if not info.get('entries'):
                 print("❌ Nenhum resultado encontrado")
                 return None
 
-            # Filtra por duração
+            # Filtrar vídeos por duração
             videos_validos = [
                 e for e in info['entries']
                 if abs(e['duration'] - target_duration) <= tolerance
@@ -138,11 +149,11 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
                     print(f" - {vid['title']} ({vid['duration']}s)")
                 return None
 
-            # Seleciona o melhor match
+            # Melhor match
             video = min(videos_validos, key=lambda x: abs(x['duration'] - target_duration))
             print(f"✅ Vídeo adequado encontrado: {video['title']} ({video['duration']}s)")
 
-            # Download real
+            # Download do áudio diretamente
             ydl.download([video['webpage_url']])
 
             return {
@@ -155,23 +166,53 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
     except Exception as e:
         print(f"⚠️ Erro crítico: {str(e)}")
         return None
+
     
+# def create_collage(image_group, verse_duration):
+#     print(f"🖼️ Criando colagem para {len(image_group)} imagens")
+#     print(image_group)
+#     image_clips = [ImageSequenceClip([img], durations=[verse_duration]) for img in image_group]
+#     # No lugar de tentar criar um ImageSequenceClip com outros clips, apenas concatenar
+#     return concatenate_videoclips(image_clips, method="compose")
 def create_collage(image_group, verse_duration):
-    image_clips = [ImageSequenceClip([img], durations=[verse_duration]) for img in image_group]
-    return ImageSequenceClip(image_clips, durations=[verse_duration] * len(image_group))
+    print(f"🖼️ Criando colagem para {len(image_group)} imagens")
+    print(image_group)
+
+    # Calcular a duração de cada imagem como metade do tempo do verso
+    image_clip_duration = verse_duration / len(image_group)
+    
+    # Criar os clipes das imagens, cada uma com a duração calculada
+    image_clips = [ImageClip(img).with_duration(image_clip_duration) for img in image_group]
+    
+    # Concatenar as imagens em um único vídeo
+    return concatenate_videoclips(image_clips, method="compose")
 
 # Função para sincronizar o vídeo com o áudio
 def sync_with_audio(collages, audio_path):
-    audio = AudioFileClip(audio_path)
-    video_clips = []
+    try:
+        # Tentar abrir o arquivo m4a diretamente
+        audio = AudioFileClip(audio_path)
+    except Exception as e:
+        print(f"Erro ao carregar webm: {e}, tentando converter para mp3.")
+        # Converter o áudio se der problema
+        audio_path = convert_audio(audio_path)
+        audio = AudioFileClip(audio_path)
 
+    video_clips = []
     start_time = 0
     for collage in collages:
-        collage = collage.set_start(start_time)
+        collage = collage.with_start(start_time)
         video_clips.append(collage)
         start_time += collage.duration
 
     final_video = concatenate_videoclips(video_clips)
-    final_audio = AudioFileClip(audio_path)
-    final_video = final_video.set_audio(final_audio)
-    final_video.write_videofile("output_video.mp4", codec="libx264", audio_codec="aac")
+    final_video = final_video.with_audio(audio)
+    final_video.write_videofile("output_video.mp4", codec="libx264", audio_codec="aac", fps=24)
+
+
+def convert_audio(input_path):
+    output_path = input_path.replace(".webm", ".mp3")
+    if not os.path.exists(output_path):
+        audio = AudioFileClip(input_path)
+        audio.write_audiofile(output_path)
+    return output_path
