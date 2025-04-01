@@ -127,7 +127,9 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
 
     is_win = paltform.system() == "Windows"
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    ffmpeg_path = os.path.join(base_path, "ffmpeg.exe") if is_win else "ffmpeg"
+    ffmpeg_path = os.path.join(base_path, "ffmpeg") 
+
+
     ydl_opts = {
         'ffmpeg_location': ffmpeg_path,
         'format': 'bestaudio/best',
