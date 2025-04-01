@@ -19,17 +19,19 @@ def download_image(url, filename):
         print(f"Erro ao baixar imagem: {url}")
         return None
 
-def images_generator(lyrics, features):
+def images_generator(lyrics, features_descriptions):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     images = []
     
+    bpm_description, energy_description, danceability_description = features_descriptions
+
     for verse in lyrics.split("\n\n"):  # Supondo que cada verso está separado por uma quebra de linha
         verse_images = []  # Lista para armazenar as 4 imagens do verso
         print(f"Gerando imagens para o verso: {verse}")
         for _ in range(2):  # Loop para gerar 4 imagens para cada verso
             response = client.images.generate(
                 model="dall-e-3",
-                prompt = f"Uma imagem futurista e abstrata inspirada no verso da música: '{verse}'. A imagem deve refletir a energia ({features['energy']}) e o tom emocional ({features['tone']}) da música, usando um estilo futurista com cores neon, arquitetura futurista, paisagens distópicas ou tecnológicas. A cena deve transmitir a sensação de velocidade e movimento, capturando o clima da música de forma visual, mas sem incluir texto.",
+                prompt = f"Uma imagem futurista e abstrata inspirada no verso da música: '{verse}'. A imagem deve refletir a energia ({energy_description}) da música, usando um estilo futurista com cores neon, arquitetura futurista, paisagens distópicas ou tecnológicas. A cena deve transmitir a sensação de velocidade e movimento, refletindo o BPM {bpm_description} e sua dançabilidade {danceability_description} música, capturando o seu clima de forma visual, mas sem incluir texto.",
                 n=1,  # Apenas 1 imagem por chamada
                 size="1024x1024"
             )

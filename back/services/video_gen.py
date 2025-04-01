@@ -21,14 +21,13 @@ def pipeline(title, artist, album, preview_url, duration):
     # Análise Librosa
     print("\n   🔬 Analisando preview técnico...")
     features, y, sr = audio_analysis(preview_url)
-
+    
     if features:
         # Exibe features
         print("\n   📊 Análise Técnica:")
-        print(f"      • 🎵 BPM: {features['bpm']}")
-        print(f"      • ⚡ Energia: {features['energy']:.3f} (0-1)")
-        print(f"      • 🕺 Dançabilidade: {features['danceability']:.3f} Hz")
-        print(f"      • 🎶 Tom: {features['tone']:.2f} semitons")
+        print(f"      • 🎵 BPM Level (0-10): {features['bpm']}")
+        print(f"      • ⚡ Energia Level (0-10): {features['energy']}")
+        print(f"      • 🕺 Dançabilidade Level (0-10): {features['danceability']}")
 
         # Obter Letra
         print("\n   📝 Buscando a letra...")
@@ -36,7 +35,7 @@ def pipeline(title, artist, album, preview_url, duration):
         # print(f"\n   📝 Letra: {lyrics}")
 
         print("\n   🎨 Gerando imagens...")
-        images = images_generator(lyrics, features)
+        images = images_generator(lyrics, interpret_features(features))
         
         print("\n   🚀 Baixando o arquivo MP3...")
         audio_info = yt_download(title, artist, album, target_duration=duration)
@@ -67,7 +66,6 @@ def pipeline(title, artist, album, preview_url, duration):
                 "bpm": features['bpm'],
                 "energy": features['energy'],
                 "danceability": features['danceability'],
-                "tone": features['tone'],
                 "images": images,
                 "audio_path": audio_path
             }
@@ -88,10 +86,9 @@ def audio_analysis(preview_url):
         # Extração de features (corrigido o warning do BPM)
         tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
         features = {
-            "bpm": int(np.mean(tempo)) if isinstance(tempo, np.ndarray) else int(tempo),
-            "energy": float(np.mean(librosa.feature.rms(y=y))),
-            "danceability": float(np.mean(librosa.feature.spectral_centroid(y=y))),
-            "tone": float(librosa.estimate_tuning(y=y, sr=sr)),
+            "bpm": np.clip(int(np.mean(tempo)) / (200 - 60) * 10, 0, 10),
+            "energy": np.clip((float(np.mean(librosa.feature.rms(y=y))) - 0.01) / (0.3 - 0.01) * 10, 0, 10),
+            "danceability": np.clip((float(np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))) - 1000) / (5000 - 1000) * 10, 0, 10),
         }
         return features, y, sr
 
@@ -99,6 +96,24 @@ def audio_analysis(preview_url):
         print(f"⚠️ Erro na análise: {str(e)}")
         return None, None, None
     
+
+def interpret_features(features):
+    bpm_levels = [
+    "muito lenta", "lenta", "suave", "moderada", "fluida", "agitada",
+    "rápida", "intensa", "acelerada", "extrema"
+]
+
+    energy_levels = [
+        "serena e tranquila", "calma e suave", "relaxante", "moderada",
+        "animada", "vibrante", "cheia de vida", "intensa", "frenética", "explosiva"
+    ]
+
+    danceability_levels = [
+        "totalmente estática", "muito difícil de dançar", "pouco dançante", "suave",
+        "agradável", "envolvente", "cativante", "contagiante", "irresistível", "explosiva"
+    ]
+
+    return bpm_levels[min(int(features["bpm"]),9)], energy_levels[min(int(features["energy"]),9)], danceability_levels[min(int(features["danceability"]),9)]
 
 import re
 import yt_dlp
@@ -123,7 +138,8 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
             else f"Duração {info['duration']}s fora do limite"
         ),
         'socket_timeout': 30,
-        'retries': 3
+        'retries': 3,
+        'cookiesfrombrowser': 'chrome',
     }
 
     try:
