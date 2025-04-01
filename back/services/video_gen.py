@@ -108,8 +108,11 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
     # Pré-processamento da query
     query = f"{title} {artist} {album}".strip()
     safe_filename = re.sub(r'[\\/*?:"<>|]', "", title)[:50].strip()
-
+    base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    ffmpeg_path = os.path.join(base_path, "ffmpeg.exe")
+    ffprobe_path = os.path.join(base_path, "ffprobe.exe")
     ydl_opts = {
+        'ffmpeg_location': ffmpeg_path,
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
