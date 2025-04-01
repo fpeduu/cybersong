@@ -13,18 +13,7 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
 CACHE_FILE = "cache.json"
-
-
-def carregar_cache():
-    try:
-        with open(CACHE_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-def salvar_cache(cache):
-    with open(CACHE_FILE, 'w') as f:
-        json.dump(cache, f)
+USER_AGENTS = os.getenv("USER_AGENTS").split(',')
 
 
 def buscar_links_letras_mus_br(artista, musica):
@@ -60,7 +49,7 @@ def buscar_links_letras_mus_br(artista, musica):
 
 def extrair_letras_letrasmusbr(url):
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': random.choice(USER_AGENTS),
         'Accept-Language': 'pt-BR,pt;q=0.9'
     }
 
@@ -123,13 +112,6 @@ def extrair_letras_letrasmusbr(url):
 def buscar_lyrics_ovh(artista, musica):
     """Fallback usando API pública"""
     try:
-        cache = carregar_cache()
-        cache_key = f"{artista.lower()}_{musica.lower()}"
-
-        if cache_key in cache:
-            print("♻️ Retornando do cache")
-            return cache[cache_key]
-
         headers = {'User-Agent': random.choice(USER_AGENTS)}
         url = f"https://api.lyrics.ovh/v1/{artista}/{musica}"
         response = requests.get(url, headers=headers, timeout=5)
@@ -137,10 +119,20 @@ def buscar_lyrics_ovh(artista, musica):
         if response.status_code == 200:
             data = response.json()
             if data.get('lyrics'):
-                letras = [linha for linha in data['lyrics'].split('\n') if linha.strip()]
-                cache[cache_key] = letras
-                salvar_cache(cache)
-                return letras
+                letras = []
+                contador = 0
+                intervalo = random.choice([4, 5])  # Define o primeiro intervalo aleatoriamente
+                # Gerando quebras de linhas para a letra
+                for linha in [l for l in data['lyrics'].split('\n') if l.strip()]:
+                    letras.append(linha)
+                    contador += 1
+                    if contador == intervalo:
+                        letras.append("\n")
+                        contador = 0  #
+                        intervalo = random.choice([4, 5])
+                        print(letras)
+                letra_completa = ''.join(letras) if "\n\n" in letras else '\n'.join(letras)
+                return letra_completa
 
         print(f"Lyrics.ovh: {response.status_code}")
         return None
@@ -181,8 +173,6 @@ def obter_e_salvar_letras(artista, musica):
                 print("✅ Letra encontrada no letras.mus.br")
                 break
             sleep(random.uniform(1, 3))
-
-            
 
     # Fallback para lyrics.ovh
     if not letra:

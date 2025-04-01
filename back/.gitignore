@@ -27,5 +27,6 @@ build/
 .cache/
 
 temp_preview.mp3
+output_video.mp4
 
 ffmpeg
