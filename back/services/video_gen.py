@@ -9,7 +9,7 @@ import re
 from .lyrics import obter_e_salvar_letras
 from .images import images_generator
 from moviepy import ImageClip, concatenate_videoclips, AudioFileClip, CompositeVideoClip, ImageSequenceClip
-
+from fastapi.responses import FileResponse
 
 def pipeline(title, artist, album, preview_url, duration):
     print(f"\n🎵 Música Escolhida:")
@@ -58,18 +58,8 @@ def pipeline(title, artist, album, preview_url, duration):
             # Criar colagem para cada conjunto de imagens e sincronizar com a música
             collages = [create_collage(image_group, verse_duration) for image_group in images]
             sync_with_audio(collages, audio_path)
-
-            return {
-                "title": title,
-                "artist": artist,
-                "album": album,
-                "bpm": features['bpm'],
-                "energy": features['energy'],
-                "danceability": features['danceability'],
-                "images": images,
-                "audio_path": audio_path
-            }
-
+            video_path = "output_video.mp4"  # Caminho para o vídeo gerado
+            return video_path
     return {"error": "Falha ao analisar a música."}
 
 
@@ -125,13 +115,12 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
     query = f"{title} {artist} {album}".strip()
     safe_filename = re.sub(r'[\\/*?:"<>|]', "", title)[:50].strip()
 
-    is_win = paltform.system() == "Windows"
     base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     ffmpeg_path = os.path.join(base_path, "ffmpeg") 
 
 
     ydl_opts = {
-        'ffmpeg_location': ffmpeg_path,
+        #'ffmpeg_location': ffmpeg_path,
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -145,8 +134,7 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
             else f"Duração {info['duration']}s fora do limite"
         ),
         'socket_timeout': 30,
-        'retries': 3,
-        'cookiesfrombrowser': 'chrome',
+        'retries': 3
     }
 
     try:

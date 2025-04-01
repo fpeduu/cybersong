@@ -44,9 +44,9 @@ function SongList() {
   const handleContinue = async () => {
     if (selectedSong) {
       try {
-        await sendSelectedMusic(selectedSong);
-        navigate("/video-result", { state: { song: selectedSong } });
-      } catch (error) {
+        const url = await sendSelectedMusic(selectedSong);
+        navigate("/video-result", { state: { videoUrl: url } });
+            } catch (error) {
         console.error("Erro ao enviar música:", error);
       }
     } else {

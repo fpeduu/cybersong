@@ -29,9 +29,13 @@ export const searchMusic = async (
 // Envia música selecionada para o backend
 export const sendSelectedMusic = async (song: Song) => {
   try {
-    const response = await axios.post(`${API_URL}/api/select`, song);
-    return response.data;
-  } catch (error) {
+    const response = await axios.post(`${API_URL}/api/select`, song, {responseType: "blob"});
+    if (response.status === 200) {
+      // Criar uma URL para o arquivo de vídeos
+      const videoBlob = new Blob([response.data], { type: "video/mp4" });
+      const videoUrl = URL.createObjectURL(videoBlob);
+      return videoUrl;
+    }  } catch (error) {
     console.error("Erro ao enviar música:", error);
     throw error;
   }

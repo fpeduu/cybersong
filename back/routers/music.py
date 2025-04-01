@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from typing import List
 from IPython.display import Audio, display, HTML
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse, FileResponse
 
 from services.deezer import search_deezer, format_duration
 from services.video_gen import pipeline
@@ -41,7 +42,7 @@ async def search_music(artist: str, title: str):
 
 @router.post("/select")
 async def select_music(selected_song: Song):
-    response = pipeline(
+    video_path = pipeline(
         title=selected_song.title,
         artist=selected_song.artist,
         album=selected_song.album,
@@ -49,9 +50,11 @@ async def select_music(selected_song: Song):
         duration=selected_song.duration
     )
 
-    if "error" not in response:
-        return {"message": "Análise realizada com sucesso!", "data": response}
-    return {"error": "Falha ao analisar a música."}
+    if isinstance(video_path, dict) and "error" in video_path:
+        return JSONResponse(content=video_path, status_code=400)
+
+    # Retorna o vídeo diretamente
+    return FileResponse(video_path, media_type="video/mp4", filename="output_video.mp4")
 
 
 

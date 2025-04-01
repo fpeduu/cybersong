@@ -27,3 +27,5 @@ build/
 .cache/
 
 temp_preview.mp3
+
+ffmpeg

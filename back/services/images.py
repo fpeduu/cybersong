@@ -31,7 +31,7 @@ def images_generator(lyrics, features_descriptions):
         for _ in range(2):  # Loop para gerar 4 imagens para cada verso
             response = client.images.generate(
                 model="dall-e-3",
-                prompt = f"Uma imagem futurista e abstrata inspirada no verso da música: '{verse}'. A imagem deve refletir a energia ({energy_description}) da música, usando um estilo futurista com cores neon, arquitetura futurista, paisagens distópicas ou tecnológicas. A cena deve transmitir a sensação de velocidade e movimento, refletindo o BPM {bpm_description} e sua dançabilidade {danceability_description} música, capturando o seu clima de forma visual, mas sem incluir texto.",
+                prompt = f"Uma paisagem futurista e abstrata inspirada no verso da música: '{verse}'. A imagem deve refletir a energia ({energy_description}) da música, usando um estilo futurista com cores neon, arquitetura futurista, paisagens distópicas ou tecnológicas. A cena deve transmitir a sensação de velocidade e movimento, refletindo o BPM {bpm_description} e sua dançabilidade {danceability_description} música, capturando o seu clima de forma visual, mas sem incluir texto.",
                 n=1,  # Apenas 1 imagem por chamada
                 size="1024x1024"
             )
