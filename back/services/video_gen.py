@@ -139,7 +139,6 @@ def yt_download(title, artist, album, target_duration, tolerance=15):
         ),
         'socket_timeout': 30,
         'retries': 3,
-        'cookiesfrombrowser': 'chrome',
     }
 
     try:
