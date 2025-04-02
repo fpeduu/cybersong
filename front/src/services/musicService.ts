@@ -10,6 +10,9 @@ export interface Song {
   preview_url: string;
   duration: number;
 }
+export interface SelectedSong extends Song {
+  theme: string;
+}
 
 export const searchMusic = async (
   artist: string,
@@ -27,15 +30,18 @@ export const searchMusic = async (
 };
 
 // Envia música selecionada para o backend
-export const sendSelectedMusic = async (song: Song) => {
+export const sendSelectedMusic = async (song: SelectedSong) => {
   try {
-    const response = await axios.post(`${API_URL}/api/select`, song, {responseType: "blob"});
+    const response = await axios.post(`${API_URL}/api/select`, song, {
+      responseType: "blob",
+    });
     if (response.status === 200) {
       // Criar uma URL para o arquivo de vídeos
       const videoBlob = new Blob([response.data], { type: "video/mp4" });
       const videoUrl = URL.createObjectURL(videoBlob);
       return videoUrl;
-    }  } catch (error) {
+    }
+  } catch (error) {
     console.error("Erro ao enviar música:", error);
     throw error;
   }
