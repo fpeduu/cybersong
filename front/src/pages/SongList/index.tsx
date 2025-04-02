@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { sendSelectedMusic, Song } from "@/services/musicService";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 function SongList() {
   const location = useLocation();
@@ -15,6 +16,7 @@ function SongList() {
   const [currentSong, setCurrentSong] = useState<number | null>(null);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null); // Estado para a música selecionada
+  const [loading, setLoading] = useState(false);
 
   const handleSelectSong = (song: Song) => {
     setSelectedSong(song); // Atualiza a música selecionada
@@ -44,10 +46,13 @@ function SongList() {
   const handleContinue = async () => {
     if (selectedSong) {
       try {
+        setLoading(true); // Inicia o carregamento
         const url = await sendSelectedMusic(selectedSong);
         navigate("/video-result", { state: { videoUrl: url } });
-            } catch (error) {
+      } catch (error) {
         console.error("Erro ao enviar música:", error);
+      } finally {
+        setLoading(false); // Finaliza o carregamento
       }
     } else {
       alert("Selecione uma música para continuar");
@@ -97,8 +102,13 @@ function SongList() {
             <Button
               className="w-full mt-4 max-w-3xs md:max-w-xs items-self-center !bg-[#497289] hover:!bg-[#3e5c7d] hover:!border-white"
               onClick={handleContinue}
+              disabled={loading}
             >
-              Continuar
+              {loading ? (
+                <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              ) : (
+                "Continuar"
+              )}
             </Button>
           </div>
         </div>
