@@ -16,7 +16,8 @@ class Song(BaseModel):
     album: str
     preview_url: str
     duration: int
-
+class SelectedSong(Song):
+    theme: str
 class SearchResponse(BaseModel):
     results: List[Song]
 
@@ -41,13 +42,14 @@ async def search_music(artist: str, title: str):
     return SearchResponse(results=songs)
 
 @router.post("/select")
-async def select_music(selected_song: Song):
+async def select_music(selected_song: SelectedSong):
     video_path = pipeline(
         title=selected_song.title,
         artist=selected_song.artist,
         album=selected_song.album,
         preview_url=selected_song.preview_url,
-        duration=selected_song.duration
+        duration=selected_song.duration,
+        theme=selected_song.theme
     )
 
     if isinstance(video_path, dict) and "error" in video_path:

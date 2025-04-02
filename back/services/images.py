@@ -19,7 +19,7 @@ def download_image(url, filename):
         print(f"Erro ao baixar imagem: {url}")
         return None
 
-def images_generator(lyrics, features_descriptions):
+def images_generator(lyrics, features_descriptions, theme):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     images = []
     
@@ -31,7 +31,7 @@ def images_generator(lyrics, features_descriptions):
         for _ in range(2):  # Loop para gerar 4 imagens para cada verso
             response = client.images.generate(
                 model="dall-e-3",
-                prompt = gerar_prompt(verse, bpm_description, energy_description, danceability_description),
+                prompt = gerar_prompt(verse, bpm_description, energy_description, danceability_description, theme),
                 n=1,  # Apenas 1 imagem por chamada
                 size="1024x1024"
             )
@@ -44,14 +44,14 @@ def images_generator(lyrics, features_descriptions):
     return images
 
 
-def gerar_prompt(verse, bpm_level, energy_level, danceability_level):
+def gerar_prompt(verse, bpm_level, energy_level, danceability_level, theme):
     client = OpenAI()  # Cria o cliente corretamente na versão nova da API
     
     system_message = "Você é um assistente que cria prompts para gerar imagens no DALL-E sem incluir texto na imagem."
 
     user_message = f"""
     Gere um prompt detalhado para uma imagem no DALL-E baseada em uma música. A imagem deve refletir a energia ({energy_level}), a dançabilidade ({danceability_level}) e a velocidade ({bpm_level}) da música. 
-    O estilo deve ser futurista, com cores neon, arquitetura tecnológica e uma sensação de movimento.
+    O estilo deve ser {theme}, com elementos visuais que combinem com essa estética e transmitam uma sensação de movimento.
     
     **Importante: A imagem NÃO pode conter texto, letras, números ou qualquer tipo de símbolo escrito.**
     

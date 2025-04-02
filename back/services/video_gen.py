@@ -11,7 +11,7 @@ from .images import images_generator
 from moviepy import ImageClip, concatenate_videoclips, AudioFileClip, CompositeVideoClip, ImageSequenceClip
 from fastapi.responses import FileResponse
 
-def pipeline(title, artist, album, preview_url, duration):
+def pipeline(title, artist, album, preview_url, duration, theme):
     print(f"\n🎵 Música Escolhida:")
     print(f"   Música: {title}")
     print(f"   Artista: {artist}")
@@ -35,7 +35,7 @@ def pipeline(title, artist, album, preview_url, duration):
         # print(f"\n   📝 Letra: {lyrics}")
 
         print("\n   🎨 Gerando imagens...")
-        images = images_generator(lyrics, interpret_features(features))
+        images = images_generator(lyrics, interpret_features(features), theme)
         
         print("\n   🚀 Baixando o arquivo MP3...")
         audio_info = yt_download(title, artist, album, target_duration=duration)
