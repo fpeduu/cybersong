@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000"; // Atualize para o seu endpoint
+const API_URL = "https://cybersong-back-production.up.railway.app"; // Endpoint de produção
 
 export interface Song {
   id: number;
