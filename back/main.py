@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routers import music, video
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 app = FastAPI()
 
@@ -20,3 +21,6 @@ app.include_router(video.router, prefix="/api")
 @app.get("/")
 async def root():
     return {"message": "Welcome to the CyberSong API"}
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", port=8000)
