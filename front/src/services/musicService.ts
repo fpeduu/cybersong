@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://cybersong-back-production.up.railway.app"; // Endpoint de produção
+const API_URL = "https://4013-150-161-2-200.ngrok-free.app"; // Endpoint de produção
 
 export interface Song {
   id: number;
