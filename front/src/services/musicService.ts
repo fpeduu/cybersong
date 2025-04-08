@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://020c-150-161-2-200.ngrok-free.app"; // Endpoint de produção
+const API_URL = "https://489b-150-161-2-200.ngrok-free.app"; // Endpoint de produção
 
 export interface Song {
   id: number;
@@ -20,6 +20,9 @@ export const searchMusic = async (
 ): Promise<Song[]> => {
   try {
     const response = await axios.get(`${API_URL}/api/search`, {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      },
       params: { artist, title },
     });
     return response.data.results;
@@ -33,6 +36,9 @@ export const searchMusic = async (
 export const sendSelectedMusic = async (song: SelectedSong) => {
   try {
     const response = await axios.post(`${API_URL}/api/select`, song, {
+      headers: {
+        "ngrok-skip-browser-warning": "true"
+      },
       responseType: "blob",
     });
     if (response.status === 200) {
